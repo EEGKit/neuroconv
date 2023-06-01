@@ -35,7 +35,6 @@ def add_recording_extractor_properties(recording_extractor, xml_file_path: str, 
         recording_extractor.set_channel_gains(gain)
 
     channel_groups = get_channel_groups(xml_file_path=xml_file_path)
-
     channel_map = {
         channel_id: idx
         for idx, channel_id in enumerate([channel_id for group in channel_groups for channel_id in group])
@@ -106,7 +105,7 @@ class NeuroScopeRecordingInterface(BaseRecordingExtractorInterface):
         if xml_file_path is None:
             xml_file_path = get_xml_file_path(data_file_path=file_path)
 
-        super().__init__(file_path=file_path, verbose=verbose, es_key=es_key)
+        super().__init__(file_path=file_path, xml_file_path=xml_file_path, verbose=verbose, es_key=es_key)
         self.source_data["xml_file_path"] = xml_file_path
 
         self.recording_extractor = subset_shank_channels(
@@ -160,14 +159,15 @@ class NeuroScopeLFPInterface(BaseLFPExtractorInterface):
         if xml_file_path is None:
             xml_file_path = get_xml_file_path(data_file_path=file_path)
 
-        super().__init__(file_path=file_path)
+        super().__init__(file_path=file_path, xml_file_path=xml_file_path)
         self.source_data["xml_file_path"] = xml_file_path
+
+        self.recording_extractor = subset_shank_channels(
+            recording_extractor=self.recording_extractor, xml_file_path=xml_file_path
+        )
 
         add_recording_extractor_properties(
             recording_extractor=self.recording_extractor, xml_file_path=xml_file_path, gain=gain
-        )
-        self.recording_extractor = subset_shank_channels(
-            recording_extractor=self.recording_extractor, xml_file_path=xml_file_path
         )
 
     def get_metadata(self) -> dict:
